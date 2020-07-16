@@ -254,11 +254,11 @@ rule line_sine_removal:
     Step 6a. Remove any LINES and SINES in the sequences.
     """
     input:
-        unmapped = os.path.join(QC, "step_6", "{sample}.unmapped.s6.out.fastq"),
+        unmapped = os.path.join(QC, "step_6", "{sample}.host.unmapped.s6.out.fastq"),
         linesine = os.path.join(CONPATH, "line_sine.fasta")
     output:
         unmapped = os.path.join(QC, "step_6", "{sample}.linesine.unmapped.s6.out.fastq"),
-        mapped   = os.path.join(QC, "step_6", "{sample}.linesine.mapped.s6.out.fastq")
+        mapped   = os.path.join(QC, "step_6", "{sample}.linesine.mapped.s6.out.fastq"),
         stats    = os.path.join(QC, "step_6", "{sample}.linesine.stats")
     shell:
         """
@@ -751,13 +751,14 @@ rule viral_seqs_lca:
         vqdb = os.path.join(AA_OUT_CHECKED, "viral_seqs_queryDB"),
         tr = os.path.join(AA_OUT_CHECKED, "taxonomyResult.dbtype")
     params:
-        tr = os.path.join(AA_OUT_CHECKED, "taxonomyResult")
+        tr = os.path.join(AA_OUT_CHECKED, "taxonomyResult"),
+        lca = os.path.join(AA_OUT_CHECKED, "lca.db")
     output:
         os.path.join(AA_OUT_CHECKED, "lca.db.dbtype"),
         os.path.join(AA_OUT_CHECKED, "lca.db.index")
     shell:
         """
-        mmseqs lca {URVDB} {params.tr} {output} \
+        mmseqs lca {URVDB} {params.tr} {params.lca} \
         --tax-lineage true \
         --lca-ranks "superkingdom,phylum,class,order,family,genus,species"
         """
@@ -766,13 +767,14 @@ rule extract_top_hit:
     input:
         os.path.join(AA_OUT_CHECKED, "taxonomyResult.dbtype")
     params:
-        tr = os.path.join(AA_OUT_CHECKED, "taxonomyResult")
+        tr = os.path.join(AA_OUT_CHECKED, "taxonomyResult"),
+        fh = os.path.join(AA_OUT_CHECKED, "taxonomyResult.firsthit")
     output:
         os.path.join(AA_OUT_CHECKED, "taxonomyResult.firsthit.dbtype"),
         os.path.join(AA_OUT_CHECKED, "taxonomyResult.firsthit.index")
     shell:
         """
-        mmseqs filterdb {params.tr} {output} --extract-lines 1
+        mmseqs filterdb {params.tr} {params.fh} --extract-lines 1
         """
 
 rule convertalis_vsqd:

@@ -79,6 +79,10 @@ SAMPLES, = glob_wildcards(os.path.join(READDIR, '{sample}_R1.fastq.gz'))
 PATTERN_R1 = '{sample}_R1'
 PATTERN_R2 = '{sample}_R2'
 
+if len(SAMPLES) == 0:
+    sys.stderr.write("FATAL: We could not detect any samples at all.\n")
+    sys.stderr.write("You should complain to Rob\n")
+    sys.exit()
 
 rule all:
     input:

@@ -75,7 +75,11 @@ if not os.path.exists(URVDB):
 # how much memory we have
 XMX = config['System']['Memory']
 
-SAMPLES, = glob_wildcards(os.path.join(READDIR, '{sample}_R1.fastq.gz'))
+
+SAMPLES,EXTENSIONS = glob_wildcards(os.path.join(READDIR, '{sample}_R1{extentions}'))
+# we just get the generic extension. This is changed in Step 1
+file_extension = EXTENSIONS[0]
+# a convenience so we don't need to use '{sample}_R1' all the time
 PATTERN_R1 = '{sample}_R1'
 PATTERN_R2 = '{sample}_R2'
 
@@ -110,8 +114,8 @@ rule clumpify:
     Step 0: Clumpify and deduplicate reads
     """
     input:
-        r1 = os.path.join(READDIR, PATTERN_R1 + ".fastq.gz"),
-        r2 = os.path.join(READDIR, PATTERN_R2 + ".fastq.gz")
+        r1 = os.path.join(READDIR, PATTERN_R1 + file_extension),
+        r2 = os.path.join(READDIR, PATTERN_R2 + file_extension)
     output:
         r1 = os.path.join(CLUMPED, PATTERN_R1 + ".clumped.fastq.gz"),
         r2 = os.path.join(CLUMPED, PATTERN_R2 + ".clumped.fastq.gz")

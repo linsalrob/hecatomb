@@ -4,14 +4,14 @@ We use a variety of databases that we have catologed here:
 
 ## Bacterial databases
 
-*Database*: bac_uniquespecies_giant.masked_Ns_removed.fasta
-*md5sum*: f7671c5507974903979295c586c729f0
-*dbtype*: nucl
-*Sequences*: 57,161
-*bp*: 2,811,399,982
-*Genomes*: 930
-*Source*: Bacterial genomes from the gut masked to remove prophages
-*Comments*:
+- *Database*: bac_uniquespecies_giant.masked_Ns_removed.fasta
+- *md5sum*: f7671c5507974903979295c586c729f0
+- *dbtype*: nucl
+- *Sequences*: 57,161
+- *bp*: 2,811,399,982
+- *Genomes*: 930
+- *Source*: Bacterial genomes from the gut masked to remove prophages
+- *Comments*:
 
 Here are the most abundant genera in this dataset:
 
@@ -36,13 +36,13 @@ Clostridiaceae | 10
 
 ## Contaminant databases
 
-*Database*:  nebnext_adapters.fa
-*md5sum*: 96967a1372600346cf93126cb197a206
-*dbtype*: nucl
-*Sequences*: 49
-*bp*: 3,153
-*Source*:  NEBNext Multiplex Oligos for Illumina. 
-*Comments*: The NEBNext Ultra Universal Primer plus 48 indexed primer sequences
+- *Database*:  nebnext_adapters.fa
+- *md5sum*: 96967a1372600346cf93126cb197a206
+- *dbtype*: nucl
+- *Sequences*: 49
+- *bp*: 3,153
+- *Source*:  NEBNext Multiplex Oligos for Illumina. 
+- *Comments*: The NEBNext Ultra Universal Primer plus 48 indexed primer sequences
 
 *Database*:   primerB.fa
 *md5sum*: e83366d892407f6f3a7244595f2e8a28

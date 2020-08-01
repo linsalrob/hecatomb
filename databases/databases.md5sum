@@ -1,0 +1,9 @@
+f7671c5507974903979295c586c729f0  bac_giant_unique_species/bac_uniquespecies_giant.masked_Ns_removed.fasta
+96967a1372600346cf93126cb197a206  contaminants/nebnext_adapters.fa
+e83366d892407f6f3a7244595f2e8a28  contaminants/primerB.fa
+fb7a711e118bd8139ee652910c5ebcf5  contaminants/rc_primerB_ad6.fa
+99c5e57d1f2040a7f392598726cf20bf  contaminants/line_sine.fasta
+86dce9ed9cc52b0f9176b78fdfbf031e  human_masked/human_virus_masked.fasta
+26973c874c8718990a40cd6a759b58d7  phages/phage_taxonomic_lineages.txt
+61bf12101d118ed48ce60de432b37dee  proteins/uniref50.fasta.gz
+c4fa382e81403ad9edb52231a5d0ef8d  proteins/uniprot_virus_c99.faa

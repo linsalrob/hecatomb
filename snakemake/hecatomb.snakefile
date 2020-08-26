@@ -77,7 +77,17 @@ XMX = config['System']['Memory']
 
 
 SAMPLES,EXTENSIONS = glob_wildcards(os.path.join(READDIR, '{sample}_R1{extentions}'))
+
+if not EXTENSIONS:
+    sys.stderr.write("""
+        FATAL: We could not parse the sequence file names.
+        We are expecting {sample}_R1{extension}, and so your files
+        should contain the characters '_R1' in the fwd reads
+        and '_R2' in the rev reads
+        """)
+    sys.exit()
 # we just get the generic extension. This is changed in Step 1
+
 file_extension = EXTENSIONS[0]
 # a convenience so we don't need to use '{sample}_R1' all the time
 PATTERN_R1 = '{sample}_R1'
@@ -117,8 +127,8 @@ rule clumpify:
         r1 = os.path.join(READDIR, PATTERN_R1 + file_extension),
         r2 = os.path.join(READDIR, PATTERN_R2 + file_extension)
     output:
-        r1 = os.path.join(CLUMPED, PATTERN_R1 + ".clumped.fastq.gz"),
-        r2 = os.path.join(CLUMPED, PATTERN_R2 + ".clumped.fastq.gz")
+        r1 = os.path.join(CLUMPED, PATTERN_R1 + ".clumped.fastq"),
+        r2 = os.path.join(CLUMPED, PATTERN_R2 + ".clumped.fastq")
     shell:
         """
         clumpify.sh in={input.r1} in2={input.r2} \
@@ -132,8 +142,8 @@ rule remove_leftmost_primerB:
     Step 1: Remove leftmost primerB. Not the reverse complements
     """
     input:
-        r1 = os.path.join(CLUMPED, PATTERN_R1 + ".clumped.fastq.gz"),
-        r2 = os.path.join(CLUMPED, PATTERN_R2 + ".clumped.fastq.gz"),
+        r1 = os.path.join(CLUMPED, PATTERN_R1 + ".clumped.fastq"),
+        r2 = os.path.join(CLUMPED, PATTERN_R2 + ".clumped.fastq"),
         primers = os.path.join(CONPATH, "primerB.fa")
     output:
         r1 = os.path.join(QC, "step_1", PATTERN_R1 + ".s1.out.fastq"),

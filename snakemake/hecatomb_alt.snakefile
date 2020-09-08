@@ -25,6 +25,9 @@ if not config:
 READDIR = config['Paths']['Reads']
 CLUMPED = config['Output']["Clumped"]
 QC = config['Output']['QC']
+if not os.path.exists(QC):
+    os.makedirs(QC, exist_ok=True)
+
 RESULTS = config['Output']['Results']
 
 ###################################################################
@@ -218,7 +221,7 @@ rule all:
         os.path.join(RESULTS, "phage_tax_table.tsv"),
         os.path.join(RESULTS, "aa.aln.m8"),
         os.path.join(RESULTS, "nt.aln.m8"),
-        directory("family_reads")
+        "family_reads"
 
 """
 Clean the data.
@@ -246,7 +249,7 @@ rule trim_low_quality:
         b1 = temporary(os.path.join(QC, "step_0", PATTERN_R1 + ".bad_out_R1.fastq")),
         b2 = temporary(os.path.join(QC, "step_0", PATTERN_R2 + ".bad_out_R2.fastq"))
     params:
-        o = os.path.join(QC, "{sample}")
+        o = os.path.join(QC, "step_0")
     shell:
         """
             prinseq++ -min_len 60 -min_qual_mean 25 -ns_max_n 1 -derep 1 \

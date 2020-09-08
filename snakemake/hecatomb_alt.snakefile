@@ -114,6 +114,16 @@ NT_CHECKED_OUT = os.path.join(RESULTS, "mmseqs_nt_checked_out")
 if not os.path.exists(NT_CHECKED_OUT):
     os.makedirs(NT_CHECKED_OUT)
 
+# note that we have two databases called "nt.fnaDB". Sorry.
+BVMDB = os.path.join(NUCLPATH, "bac_virus_masked", "nt.fnaDB")
+if not os.path.exists(BVMDB):
+    sys.stderr.write(f"FATAL: You appear not to have the nucleotide ")
+    sys.stderr.write(f"database {BVMDB} installed.\n")
+    sys.stderr.write(f"Please download the databases using the download_databases.snakefile\n")
+    sys.exit()
+
+
+
 ###################################################################
 #                                                                 #
 # Taxonomy databases and related information                      #
@@ -200,7 +210,10 @@ rule all:
         os.path.join(AA_OUT_CHECKED, "viruses_checked_aa_tax_table.tsv"),
         os.path.join(AA_OUT_CHECKED, "unclassified_checked_aa_seqs.fasta"),
         os.path.join(NT_OUT, "resultDB.firsthit.m8"),
-        os.path.join(NT_CHECKED_OUT, "mmseqs_pviral_nt_lineage.tsv")
+        os.path.join(NT_CHECKED_OUT, "mmseqs_pviral_nt_lineage.tsv"),
+        os.path.join(NT_CHECKED_OUT, "phage_nt_seqs.fasta"),
+        os.path.join(NT_CHECKED_OUT, "pviral_virus_nt_seqs.fasta")
+
 
 
 
@@ -1144,6 +1157,136 @@ rule nt_annotate:
 
 
 
+"""
+End mmseqs_pviral_nt.snakefile
+
+Based on mmseqs_pviral_nt_check.sh
+
+"""
+
+
+rule find_nt_phages:
+    input:
+        # this input comes from mmseqs_pviral_nt.snakefile
+        os.path.join(NT_CHECKED_OUT, "mmseqs_pviral_nt_lineage.tsv")
+    output:
+        os.path.join(NT_CHECKED_OUT, "phage_nt_table.tsv")
+    shell:
+        """
+        tail -n+2 {input} | grep -f {PHAGE_LINEAGES} |  sort -n -k1 \
+                > {output}
+        """
+
+rule list_nt_phages:
+    input:
+        os.path.join(NT_CHECKED_OUT, "phage_nt_table.tsv")
+    output:
+         os.path.join(NT_CHECKED_OUT, "phage_nt_table.list")
+    shell:
+        """
+        cut -f1 {input} > {output}
+        """
+
+rule pull_nt_phage_seqs:
+    input:
+        fa = os.path.join(RESULTS, "seqtable.fasta"),
+        ls = os.path.join(NT_CHECKED_OUT, "phage_nt_table.list")
+    output:
+        os.path.join(NT_CHECKED_OUT, "phage_nt_seqs.fasta")
+    shell:
+        """
+        grep --no-group-separator -A 1 -Fwf {input.ls} {input.fa} > {output}
+        """
+
+rule non_nt_phage_viruses:
+    input:
+        os.path.join(NT_CHECKED_OUT, "mmseqs_pviral_nt_lineage.tsv")
+    output:
+        os.path.join(NT_CHECKED_OUT, "pviral_virus_nt_table.tsv")
+    shell:
+        """
+        tail -n+2 {input} | grep -vf {PHAGE_LINEAGES} |  sort -n -k1 \
+                > {output}
+        """
+
+rule list_non_nt_viruses:
+    input:
+        os.path.join(NT_CHECKED_OUT, "pviral_virus_nt_table.tsv")
+    output:
+        os.path.join(NT_CHECKED_OUT, "pviral_virus_nt_table.list")
+    shell:
+        """
+        cut -f1 {input} > {output}
+        """
+
+rule pull_nt_non_phage_seqs:
+    input:
+        fa = os.path.join(RESULTS, "seqtable.fasta"),
+        ls = os.path.join(NT_CHECKED_OUT, "pviral_virus_nt_table.list")
+    output:
+        os.path.join(NT_CHECKED_OUT, "pviral_virus_nt_seqs.fasta")
+    shell:
+        """
+        grep --no-group-separator -A 1 -Fwf {input.ls} {input.fa} > {output}
+        """
+
+rule create_nt_db:
+    input:
+        os.path.join(NT_CHECKED_OUT, "pviral_virus_nt_seqs.fasta")
+    output:
+         os.path.join(NT_CHECKED_OUT, "seqtable_queryDB")
+    shell:
+        """
+        mmseqs createdb {input} {output} --dbtype 2
+        """
+
+rule search_nt_db:
+    input:
+        os.path.join(NT_CHECKED_OUT, "seqtable_queryDB")
+    output:
+        os.path.join(NT_CHECKED_OUT, "resultDB")
+    shell:
+        """
+        mmseqs search {input} {BVMDB} {output} $(mktemp -d -p {TMPDIR}) \
+            -a -e 0.000001 --search-type 3 --cov-mode 2 -c 0.95
+        """
+
+rule filter_nt_db:
+    input:
+        os.path.join(NT_CHECKED_OUT, "resultDB")
+    output:
+        os.path.join(NT_CHECKED_OUT, "resultDB.firsthit")
+    shell:
+        """
+        mmseqs filterdb {input} {output}  --extract-lines 1
+        """
+
+rule convert_nt_alias:
+    input:
+        sq = os.path.join(NT_CHECKED_OUT, "seqtable_queryDB"),
+        fh = os.path.join(NT_CHECKED_OUT, "resultDB.firsthit")
+    output:
+        os.path.join(NT_CHECKED_OUT, "resultDB.firsthit.m8")
+    shell:
+        """
+        mmseqs convertalis {input.sq} {BVMDB} {input.fh} {output}
+        """
+
+rule annotate_checked_nt:
+    input:
+        fhtbl = os.path.join(NT_CHECKED_OUT, "resultDB.firsthit.m8")
+    output:
+        linout = os.path.join(NT_CHECKED_OUT, "mmseqs_pviral_nt_checked_lineage.tsv")
+    params:
+        taxtax = TAXTAX
+    script:
+        "scripts/mmseqs_pviral_nt_check_annotate.R"
+
+
+"""
+
+End mmseqs_pviral_nt.snakefile
+"""
 
 
 

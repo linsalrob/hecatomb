@@ -212,7 +212,8 @@ rule all:
         os.path.join(NT_OUT, "resultDB.firsthit.m8"),
         os.path.join(NT_CHECKED_OUT, "mmseqs_pviral_nt_lineage.tsv"),
         os.path.join(NT_CHECKED_OUT, "phage_nt_seqs.fasta"),
-        os.path.join(NT_CHECKED_OUT, "pviral_virus_nt_seqs.fasta")
+        os.path.join(NT_CHECKED_OUT, "pviral_virus_nt_seqs.fasta"),
+        os.path.join(NT_CHECKED_OUT, "mmseqs_pviral_nt_checked_lineage.tsv")
 
 
 
@@ -1285,7 +1286,7 @@ rule annotate_checked_nt:
 
 """
 
-End mmseqs_pviral_nt.snakefile
+End mmseqs_pviral_nt_check.snakefile
 """
 
 

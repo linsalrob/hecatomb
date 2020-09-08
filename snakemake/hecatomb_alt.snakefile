@@ -216,8 +216,6 @@ rule all:
         os.path.join(NT_CHECKED_OUT, "mmseqs_pviral_nt_checked_lineage.tsv")
 
 
-
-
 """
 Clean the data.
 

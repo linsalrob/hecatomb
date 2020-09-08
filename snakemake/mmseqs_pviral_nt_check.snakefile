@@ -82,7 +82,8 @@ if not os.path.exists(BVMDB):
 rule all:
     input:
         os.path.join(NT_CHECKED_OUT, "phage_nt_seqs.fasta"),
-        os.path.join(NT_CHECKED_OUT, "pviral_virus_nt_seqs.fasta")
+        os.path.join(NT_CHECKED_OUT, "pviral_virus_nt_seqs.fasta"),
+        os.path.join(NT_CHECKED_OUT, "mmseqs_pviral_nt_checked_lineage.tsv")
 
 
 

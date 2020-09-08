@@ -156,42 +156,59 @@ rule create_nt_db:
     input:
         os.path.join(NT_CHECKED_OUT, "pviral_virus_nt_seqs.fasta")
     output:
-         os.path.join(NT_CHECKED_OUT, "seqtable_queryDB")
+         idx = os.path.join(NT_CHECKED_OUT, "seqtable_queryDB.index"),
+         dbt = os.path.join(NT_CHECKED_OUT, "seqtable_queryDB.dbtype")
+    params:
+         st = os.path.join(NT_CHECKED_OUT, "seqtable_queryDB")
     shell:
         """
-        mmseqs createdb {input} {output} --dbtype 2
+        mmseqs createdb {input} {params.st} --dbtype 2
         """
 
-rule search_nt_db:
+rule nt_search_checked:
     input:
-        os.path.join(NT_CHECKED_OUT, "seqtable_queryDB")
+        idx = os.path.join(NT_CHECKED_OUT, "seqtable_queryDB.index"),
+        dbt = os.path.join(NT_CHECKED_OUT, "seqtable_queryDB.dbtype")
     output:
-        os.path.join(NT_CHECKED_OUT, "resultDB")
+        idx = os.path.join(NT_CHECKED_OUT, "resultDB.index"),
+        dbt = os.path.join(NT_CHECKED_OUT, "resultDB.dbtype")
+    params:
+        st = os.path.join(NT_CHECKED_OUT, "seqtable_queryDB"),
+        rdb = os.path.join(NT_CHECKED_OUT, "resultDB")
     shell:
         """
-        mmseqs search {input} {BVMDB} {output} $(mktemp -d -p {TMPDIR}) \
-            -a -e 0.000001 --search-type 3 --cov-mode 2 -c 0.95
+        mmseqs search {params.st} {NTDB} {params.rdb} $(mktemp -d -p {TMPDIR}) \
+        -a -e 0.000001 --search-type 3 --cov-mode 2 -c 0.95
         """
 
 rule filter_nt_db:
     input:
-        os.path.join(NT_CHECKED_OUT, "resultDB")
+        idx = os.path.join(NT_CHECKED_OUT, "resultDB.index"),
+        dbt = os.path.join(NT_CHECKED_OUT, "resultDB.dbtype")
     output:
-        os.path.join(NT_CHECKED_OUT, "resultDB.firsthit")
+        idx = os.path.join(NT_CHECKED_OUT, "resultDB.firsthit.index"),
+        dbt = os.path.join(NT_CHECKED_OUT, "resultDB.firsthit.dbtype")
+    params:
+        rdb = os.path.join(NT_CHECKED_OUT, "resultDB")
     shell:
         """
-        mmseqs filterdb {input} {output}  --extract-lines 1
+        mmseqs filterdb {params.rdb} {output}  --extract-lines 1
         """
 
 rule convert_nt_alias:
     input:
-        sq = os.path.join(NT_CHECKED_OUT, "seqtable_queryDB"),
-        fh = os.path.join(NT_CHECKED_OUT, "resultDB.firsthit")
+        sqi = os.path.join(NT_CHECKED_OUT, "seqtable_queryDB.index"),
+        sqd = os.path.join(NT_CHECKED_OUT, "seqtable_queryDB.dbtype"),
+        idx = os.path.join(NT_CHECKED_OUT, "resultDB.firsthit.index"),
+        dbt = os.path.join(NT_CHECKED_OUT, "resultDB.firsthit.dbtype")
     output:
         os.path.join(NT_CHECKED_OUT, "resultDB.firsthit.m8")
+    params:
+        fh = os.path.join(NT_CHECKED_OUT, "resultDB.firsthit"),
+        sq = os.path.join(NT_CHECKED_OUT, "seqtable_queryDB"),
     shell:
         """
-        mmseqs convertalis {input.sq} {BVMDB} {input.fh} {output}
+        mmseqs convertalis {params.sq} {BVMDB} {params.fh} {output}
         """
 
 rule annotate_checked_nt:

@@ -3,7 +3,7 @@
 The hecatomb snakefile has all the parts of the hecatomb pipeline, however
 you will need to download the databases before we can begin!
 
-Rob Edwards, Jan 2020
+Rob Edwards, Jan-Sep 2020
 """
 
 import os
@@ -15,17 +15,51 @@ if not config:
     sys.exit()
 
 
-DBDIR = config['Paths']['Databases']
+###################################################################
+#                                                                 #
+# The output directories where results and analyses are written   #
+#                                                                 #
+###################################################################
+
+# paths for our data. This is where we will read and put things
+READDIR = config['Paths']['Reads']
+CLUMPED = config['Output']["Clumped"]
+QC = config['Output']['QC']
+RESULTS = config['Output']['Results']
+
+###################################################################
+#                                                                 #
+# We create subdirectories in this temp directory as needed       #
+#                                                                 #
+###################################################################
+
 TMPDIR = config['Paths']['Temp']
 if not os.path.exists(TMPDIR):
     os.makedirs(TMPDIR, exist_ok=True)
 
 
-# paths for our databases
+###################################################################
+#                                                                 #
+# The database and path structure. Note that below we define the  #
+# databases that we are actaully looking for, and test            #
+# to see if each of them exist. You should be able                #
+# to automatically download them.                                 #
+#                                                                 #
+###################################################################
+
+DBDIR = config['Paths']['Databases']
 BACBT2 = os.path.join(DBDIR, "bac_giant_unique_species", "bac_uniquespecies_giant.masked_Ns_removed")
 HOSTBT2 = os.path.join(DBDIR, "human_masked", "human_virus_masked")
 CONPATH = os.path.join(DBDIR, "contaminants")
 PROTPATH = os.path.join(DBDIR, "proteins")
+NUCLPATH = os.path.join(DBDIR, "nucleotides")
+TAXPATH  = os.path.join(DBDIR, "taxonomy")
+
+###################################################################
+#                                                                 #
+# The bacterial and host bowtie2 indexes                          #
+#                                                                 #
+###################################################################
 
 for bti in [BACBT2, HOSTBT2]:
     if not os.path.exists(f"{bti}.1.bt2l") and not os.path.exists(f"{bti}.1.bt2"):
@@ -44,12 +78,12 @@ if not os.path.exists(PROTPATH):
     sys.stderr.write("FATAL: You appear not to have the protein databases. Please download the databases using the download_databases.snakefile\n")
     sys.exit()
 
+###################################################################
+#                                                                 #
+# Amino acid definitions and paths for searches                   #
+#                                                                 #
+###################################################################
 
-# paths for our data. This is where we will read and put things
-READDIR = config['Paths']['Reads']
-CLUMPED = config['Output']["Clumped"]
-QC = config['Output']['QC']
-RESULTS = config['Output']['Results']
 AA_OUT  = os.path.join(RESULTS, "mmseqs_aa_out")
 if not os.path.exists(AA_OUT):
     os.makedirs(AA_OUT, exist_ok=True)
@@ -58,11 +92,41 @@ AA_OUT_CHECKED  = os.path.join(RESULTS, "mmseqs_aa_checked_out")
 if not os.path.exists(AA_OUT_CHECKED):
     os.makedirs(AA_OUT_CHECKED, exist_ok=True)
 
-VIRDB = os.path.join(PROTPATH, "uniprot_virus_c99.db")
-if not os.path.exists(VIRDB):
-    sys.stderr.write(f"FATAL: {VIRDB} does not exist. Please ensure you")
-    sys.stderr.write(" have installed the databases\n")
+###################################################################
+#                                                                 #
+# nucleotide definitions and paths for searches                   #
+#                                                                 #
+###################################################################
+
+NTDB = os.path.join(NUCLPATH, "refseq_virus_nt_UniVec_masked", "nt.fnaDB")
+if not os.path.exists(NTDB):
+    sys.stderr.write(f"FATAL: You appear not to have the nucleotide ")
+    sys.stderr.write(f"database {NTDB} installed.\n")
+    sys.stderr.write(f"Please download the databases using the download_databases.snakefile\n")
     sys.exit()
+
+
+NT_OUT = os.path.join(RESULTS, "mmseqs_nt_out")
+if not os.path.exists(NT_OUT):
+    os.makedirs(NT_OUT)
+
+NT_CHECKED_OUT = os.path.join(RESULTS, "mmseqs_nt_checked_out")
+if not os.path.exists(NT_CHECKED_OUT):
+    os.makedirs(NT_CHECKED_OUT)
+
+###################################################################
+#                                                                 #
+# Taxonomy databases and related information                      #
+#                                                                 #
+###################################################################
+
+TAXTAX = os.path.join(TAXPATH, "taxonomizr_accessionTaxa.sql")
+if not os.path.exists(TAXTAX):
+    sys.stderr.write(f"FATAL: You appear not to have the taxonomizr ")
+    sys.stderr.write(f"database {TAXTAX} installed.\n")
+    sys.stderr.write(f"Please download the databases using the download_databases.snakefile\n")
+    sys.exit()
+
 
 PHAGE_LINEAGES = os.path.join(DBDIR, "phages", "phage_taxonomic_lineages.txt")
 if not os.path.exists(PHAGE_LINEAGES):
@@ -71,7 +135,12 @@ if not os.path.exists(PHAGE_LINEAGES):
     sys.stderr.write("you have the latest version of the databases\n")
     sys.exit()
 
-# uniref50 + viruses
+###################################################################
+#                                                                 #
+# Uniprot databases and related information                       #
+#                                                                 #
+###################################################################
+
 URVPATH = os.path.join(PROTPATH, "uniref_plus_virus")
 URVDB = os.path.join(URVPATH, "uniref50_virus.db") # uniref50 + viruses database
 if not os.path.exists(URVDB):
@@ -80,13 +149,23 @@ if not os.path.exists(URVDB):
     sys.stderr.write("download_databases.snakefile before commencing\n")
     sys.exit()
 
-
+VIRDB = os.path.join(PROTPATH, "uniprot_virus_c99.db")
+if not os.path.exists(VIRDB):
+    sys.stderr.write(f"FATAL: {VIRDB} does not exist. Please ensure you")
+    sys.stderr.write(" have installed the databases\n")
+    sys.exit()
 
 
 
 # how much memory we have
 XMX = config['System']['Memory']
 
+
+###################################################################
+#                                                                 #
+# Read the sequence files and parse the file names.               #
+#                                                                 #
+###################################################################
 
 SAMPLES,EXTENSIONS = glob_wildcards(os.path.join(READDIR, '{sample}_R1{extentions}'))
 
@@ -119,7 +198,9 @@ rule all:
         os.path.join(AA_OUT_CHECKED, "taxonomyResult.report"),
         os.path.join(AA_OUT_CHECKED, "viruses_checked_aa_table.tsv"),
         os.path.join(AA_OUT_CHECKED, "viruses_checked_aa_tax_table.tsv"),
-        os.path.join(AA_OUT_CHECKED, "unclassified_checked_aa_seqs.fasta")
+        os.path.join(AA_OUT_CHECKED, "unclassified_checked_aa_seqs.fasta"),
+        os.path.join(NT_OUT, "resultDB.firsthit.m8"),
+        os.path.join(NT_CHECKED_OUT, "mmseqs_pviral_nt_lineage.tsv")
 
 
 
@@ -984,4 +1065,85 @@ rule pull_non_viral_lineages:
 """
 
 End the code from mmseqs_pviral_aa_check.snakefile
+
+This code comes from mmseqs_pviral_nt.snakefile and is 
+based on mmseqs_pviral_nt.sh
+
 """
+
+
+rule create_nt_querydb:
+    input:
+        os.path.join(AA_OUT, "pviral_aa_unclassified_seqs.fasta")
+    output:
+        idx = os.path.join(NT_OUT, "seqtable_queryDB.index"),
+        dbt = os.path.join(NT_OUT, "seqtable_queryDB.dbtype")
+    params:
+        st = os.path.join(NT_OUT, "seqtable_queryDB")
+    shell:
+        """
+        mmseqs createdb {input} {params.st}  --dbtype 2
+        """
+
+rule nt_search:
+    input:
+        idx = os.path.join(NT_OUT, "seqtable_queryDB.index"),
+        dbt = os.path.join(NT_OUT, "seqtable_queryDB.dbtype")
+    output:
+        idx = os.path.join(NT_OUT, "resultDB.index"),
+        dbt = os.path.join(NT_OUT, "resultDB.dbtype")
+    params:
+        st = os.path.join(NT_OUT, "seqtable_queryDB"),
+        rdb = os.path.join(NT_OUT, "resultDB")
+    shell:
+        """
+        mmseqs search {params.st} {NTDB} {params.rdb} $(mktemp -d -p {TMPDIR}) \
+        -a -e 0.000001 --search-type 3 --cov-mode 2 -c 0.95
+        """
+
+rule nt_top_hit:
+    input:
+        idx = os.path.join(NT_OUT, "resultDB.index"),
+        dbt = os.path.join(NT_OUT, "resultDB.dbtype")
+    output:
+        os.path.join(NT_OUT, "resultDB.firsthit.dbtype"),
+        os.path.join(NT_OUT, "resultDB.firsthit.index")
+    params:
+        rdb = os.path.join(NT_OUT, "resultDB"),
+        rdbfh = os.path.join(NT_OUT, "resultDB.firsthit")
+    shell:
+        """
+        mmseqs filterdb {params.rdb} {params.rdbfh} --extract-lines 1
+        """
+
+rule nt_to_m8:
+    input:
+        sidx = os.path.join(NT_OUT, "seqtable_queryDB.index"),
+        sdbt = os.path.join(NT_OUT, "seqtable_queryDB.dbtype"),
+        ridx = os.path.join(NT_OUT, "resultDB.firsthit.dbtype"),
+        rdbt = os.path.join(NT_OUT, "resultDB.firsthit.index")
+    output:
+        os.path.join(NT_OUT, "resultDB.firsthit.m8")
+    params:
+        st = os.path.join(NT_OUT, "seqtable_queryDB"),
+        rdbfh = os.path.join(NT_OUT, "resultDB.firsthit")
+    shell:
+        """
+        mmseqs convertalis {params.st} {NTDB} {params.rdbfh} {output}
+        """
+
+rule nt_annotate:
+    input:
+        fhtbl = os.path.join(NT_OUT, "resultDB.firsthit.m8")
+    output:
+        linout = os.path.join(NT_CHECKED_OUT, "mmseqs_pviral_nt_lineage.tsv")
+    params:
+        taxtax = TAXTAX
+    script:
+        "scripts/mmseqs_pviral_nt_annotate.R"
+
+
+
+
+
+

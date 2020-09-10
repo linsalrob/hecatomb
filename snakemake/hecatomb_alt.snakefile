@@ -1274,10 +1274,11 @@ rule filter_nt_db:
         idx = os.path.join(NT_CHECKED_OUT, "resultDB.firsthit.index"),
         dbt = os.path.join(NT_CHECKED_OUT, "resultDB.firsthit.dbtype")
     params:
-        rdb = os.path.join(NT_CHECKED_OUT, "resultDB")
+        rdb = os.path.join(NT_CHECKED_OUT, "resultDB"),
+        rfh = os.path.join(NT_CHECKED_OUT, "resultDB.firsthit")
     shell:
         """
-        mmseqs filterdb {params.rdb} {output}  --extract-lines 1
+        mmseqs filterdb {params.rdb} {params.rfh}  --extract-lines 1
         """
 
 rule convert_nt_alias:
@@ -1415,6 +1416,10 @@ rule add_nt_tax_header:
 """
 I am not very happy with this solution and looking for some alternative ideas
 Basically this is very linear, and I can't figure out how to make it non-linear!
+
+I think the solution is to make a list of all virus familes (e.g. read
+that from a file) and then use expand on that list to create each of the
+fasta files and then finally remove any empty files, but this will work for now
 """
 
 rule make_fasta:
@@ -1427,10 +1432,8 @@ rule make_fasta:
         mkdir -p {output} && 
         for FAM in $(tail -n +2 {input} | cut -f6 | awk '!s[$0]++');
         do 
-            for TID in $(grep $FAM {input} | cut -f 1);
-            do
-                grep -A1 -Fw $TID results/seqtable.fasta >> {output}/$FAM.fasta
-            done
+            grep $FAM {input} | cut -f 1 | \
+                grep -A1 -Fwf - results/seqtable.fasta > {output}/$FAM.fasta
         done
         """
 

@@ -14,12 +14,13 @@ Everything hecatomb requires can be installed with conda (or mamba)!
 This conda command should install all dependencies for you
 
 ```
-mamba install -c conda-forge -c bioconda cd-hit prinseq-plus-plus bowtie2 bbmap samtools
+mamba install -c conda-forge -c bioconda cd-hit prinseq-plus-plus bowtie2 bbmap samtools mmseqs2
 ```
 
 For **download_databases.snakefile** you will need:
 - [cURL](https://en.wikipedia.org/wiki/CURL) - This should already be on your system
 - [cd-hit](http://weizhongli-lab.org/cd-hit/) - install with conda: `mamba install cd-hit`
+- [MMseqs2](https://github.com/soedinglab/MMseqs2) - install with conda: `mamba install mmseqs2`
 
 For **hecatomb_alt.snakefile**
 - [prinseq++](https://github.com/Adrian-Cantu/PRINSEQ-plus-plus) - install with conda: `mamba install prinseq-plus-plus`

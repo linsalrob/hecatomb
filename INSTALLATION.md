@@ -13,6 +13,10 @@ Please note that `tidyverse` requires libxml2-dev or libxml2-devel depending on 
 
 To install the required `R` packages, you can run the accessory [install_packages.R](accessory/install_packages.R) like so: `Rscript install_packages.R`. Note that you do not need to be root to install these packages.
 
+# Conda installation
+
+Please check the [dependencies](DEPENDENCIES.md) for instructions on how to install all the dependencies using CONDA.
+
 # The config file
 
 You should make a copy of the config file. We typically make a copy of that file into each directory where we are working. Then if you make any changes to that file they reside with the data. 
@@ -24,6 +28,23 @@ The key things in the config file are:
 2. The directory name where your raw reads (`fastq files`) reside. 
 
 You can adjust almost everything else as needed, and the directories will be created when the data is generated.
+
+# Resources
+
+The snakemake conda applications require use of the `resources` options available in snakemake to request additional resources (memory/time/cpus) on an as-needed basis (i.e. not every application requests these by default). We strongly recommend setting up default configurations for these.
+
+Create a directory `~/.config/snakemake/slurm/` and then create the file `~/.config/snakemake/slurm/config.yaml` with these contents:
+
+
+```
+jobs: 10
+cluster: "sbatch -t {resources.time_min} --mem={resources.mem_mb} -c {resources.cpus} -o logs_slurm/{rule}_{jobid}.out -e logs_slurm/{rule}_{jobid}.err "
+default-resources: [cpus=1, mem_mb=2000, time_min=60]
+latency-wait: 60
+local-cores: 32
+```
+
+Now run snakemake as `snakemake --profile slurm --configfile config.yaml -s snakefile` to use those default settings.
 
 
 # Setting up the databases

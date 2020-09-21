@@ -333,12 +333,17 @@ rule line_sine_download:
     """
     A database of LINES and SINES that we screen against to 
     remove contaminants.
+
+    Note that the current version has two ids with the same name
+    but different sequences, so we use seqtk to rename them
     """
     output:
         os.path.join(CONPATH, "line_sine.fasta")
     shell:
         """
-        curl -L http://sines.eimb.ru/banks/SINEs.bnk > {output} && \
-        curl -L http://sines.eimb.ru/banks/LINEs.bnk >> {output}
+        (curl -L http://sines.eimb.ru/banks/SINEs.bnk && \
+                curl -L http://sines.eimb.ru/banks/LINEs.bnk) \
+                | sed -e '/^>/ s/ /_/g' | seqtk rename \
+                > {output}
         """
 

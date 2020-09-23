@@ -248,6 +248,12 @@ rule trim_low_quality:
         s2 = os.path.join(QC, "step_0", PATTERN_R2 + ".single_out.s0.fastq"),
         b1 = temporary(os.path.join(QC, "step_0", PATTERN_R1 + ".bad_out_R1.fastq")),
         b2 = temporary(os.path.join(QC, "step_0", PATTERN_R2 + ".bad_out_R2.fastq"))
+    benchmark:
+        "benchmarks/{rules.myrule.name}_{sample}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=8
     params:
         o = os.path.join(QC, "step_0")
     shell:
@@ -256,7 +262,7 @@ rule trim_low_quality:
                     -out_format 0 -trim_tail_left 5 -trim_tail_right 5 \
                     -ns_max_n 5  -trim_qual_type min -trim_qual_left 30 \
                     -trim_qual_right 30 -trim_qual_window 10 \
-                    -threads {threads} \
+                    -threads {resources.cpus} \
                     -out_good {output.r1} -out_single {output.s1} -out_bad {output.b1} \
                     -out_good2 {output.r2} -out_single2 {output.s2} -out_bad2 {output.b2} \
                     -fastq {input.r1} \
@@ -276,6 +282,12 @@ rule remove_leftmost_primerB:
         r1 = os.path.join(QC, "step_1", PATTERN_R1 + ".s1.out.fastq"),
         r2 = os.path.join(QC, "step_1", PATTERN_R2 + ".s1.out.fastq"),
         stats = os.path.join(QC, "step_1", "{sample}.s1.stats.txt")
+    benchmark:
+        "benchmarks/{rules.myrule.name}_{sample}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=8
     shell:
         """
         bbduk.sh in={input.r1} in2={input.r2} \
@@ -299,6 +311,12 @@ rule remove_3prime_contaminant:
         r1 = os.path.join(QC, "step_2", PATTERN_R1 + ".s2.out.fastq"),
         r2 = os.path.join(QC, "step_2", PATTERN_R2 + ".s2.out.fastq"),
         stats = os.path.join(QC, "step_2", "{sample}.s2.stats.txt")
+    benchmark:
+        "benchmarks/{rules.myrule.name}_{sample}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=8
     shell:
         """
         bbduk.sh in={input.r1} in2={input.r2} \
@@ -321,6 +339,12 @@ rule remove_primer_free_adapter:
         r1 = os.path.join(QC, "step_3", PATTERN_R1 + ".s3.out.fastq"),
         r2 = os.path.join(QC, "step_3", PATTERN_R2 + ".s3.out.fastq"),
         stats = os.path.join(QC, "step_3", "{sample}.s3.stats.txt")
+    benchmark:
+        "benchmarks/{rules.myrule.name}_{sample}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=8
     shell:
         """
         bbduk.sh in={input.r1} in2={input.r2} \
@@ -343,6 +367,12 @@ rule remove_adapter_free_primer:
         r1 = os.path.join(QC, "step_4", PATTERN_R1 + ".s4.out.fastq"),
         r2 = os.path.join(QC, "step_4", PATTERN_R2 + ".s4.out.fastq"),
         stats = os.path.join(QC, "step_4", "{sample}.s4.stats.txt")
+    benchmark:
+        "benchmarks/{rules.myrule.name}_{sample}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=8
     shell:
         """
         bbduk.sh in={input.r1} in2={input.r2} \
@@ -364,6 +394,12 @@ rule remove_vector_contamination:
         r1 = os.path.join(QC, "step_5", PATTERN_R1 + ".s5.out.fastq"),
         r2 = os.path.join(QC, "step_5", PATTERN_R2 + ".s5.out.fastq"),
         stats = os.path.join(QC, "step_5", "{sample}.s5.stats.txt")
+    benchmark:
+        "benchmarks/{rules.myrule.name}_{sample}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=8
     shell:
         """
         bbduk.sh in={input.r1} in2={input.r2} \
@@ -383,11 +419,19 @@ rule bowtie2_host_removal:
         r2 = os.path.join(QC, "step_5", PATTERN_R2 + ".s5.out.fastq"),
     output:
         os.path.join(QC, "step_6", '{sample}.host.bam')
+    benchmark:
+        "benchmarks/{rules.myrule.name}_{sample}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=8
     params:
         idx = HOSTBT2
     shell:
         """
-            bowtie2 -p {threads} -x {params.idx} -1 {input.r1} -2 {input.r2} | samtools view -bh | samtools sort -o {output} -
+        bowtie2 -p {resources.cpus} -x {params.idx} -1 {input.r1} -2 {input.r2} | \
+        samtools view --threads {resources.cpus} -bh | \
+        samtools sort --threads {resources.cpus} -o {output} -
         """
 
 rule reads_host_mapped:
@@ -402,11 +446,17 @@ rule reads_host_mapped:
         r1 = os.path.join(QC, "step_6", PATTERN_R1 + '_host.mapped.fastq'),
         r2 = os.path.join(QC, "step_6", PATTERN_R2 + '_host.mapped.fastq'),
         s = os.path.join(QC, "step_6", '{sample}_singletons_host.mapped.fastq')
+    benchmark:
+        "benchmarks/{rules.myrule.name}_{sample}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=8
     shell:
         """
-        samtools fastq -G 12 -f 65 {input} > {output.r1} &&
-        samtools fastq  -G 12 -f 129 {input} > {output.r2} &&
-        samtools fastq  -F 5 {input} > {output.s}
+        samtools fastq --threads {resources.cpus} -G 12 -f 65 {input} > {output.r1} &&
+        samtools fastq --threads {resources.cpus} -G 12 -f 129 {input} > {output.r2} &&
+        samtools fastq --threads {resources.cpus} -F 5 {input} > {output.s}
         """
 
 rule reads_host_unmapped:
@@ -416,11 +466,17 @@ rule reads_host_unmapped:
         r1 = os.path.join(QC, "step_6", PATTERN_R1 + '_host.unmapped.fastq'),
         r2 = os.path.join(QC, "step_6", PATTERN_R2 + '_host.unmapped.fastq'),
         s = os.path.join(QC, "step_6", '{sample}_singletons_host.unmapped.fastq')
+    benchmark:
+        "benchmarks/{rules.myrule.name}_{sample}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=8
     shell:
         """
-        samtools fastq  -f 77  {input} > {output.r1} && 
-        samtools fastq  -f 141 {input} > {output.r2} &&
-        samtools fastq  -f 4 -F 1  {input} > {output.s}
+        samtools fastq --threads {resources.cpus} -f 77  {input} > {output.r1} && 
+        samtools fastq --threads {resources.cpus} -f 141 {input} > {output.r2} &&
+        samtools fastq --threads {resources.cpus} -f 4 -F 1  {input} > {output.s}
         """
 
 rule line_sine_bam:
@@ -430,12 +486,19 @@ rule line_sine_bam:
         s = os.path.join(QC, "step_6", '{sample}_singletons_host.unmapped.fastq')
     output:
         os.path.join(QC, "step_6", '{sample}.linesine.bam')
+    benchmark:
+        "benchmarks/{rules.myrule.name}_{sample}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=8
     params:
         idx = os.path.join(CONPATH, "line_sine")
     shell:
         """
-        bowtie2 -p {threads} -x {params.idx} -1 {input.r1} -2 {input.r2} \
-        -U {input.s} | samtools view -bh | samtools sort -o {output} -
+        bowtie2 -p {resources.cpus} -x {params.idx} -1 {input.r1} -2 {input.r2} \
+        -U {input.s} | samtools view --threads {resources.cpus} -bh | \
+        samtools sort --threads {resources.cpus} -o {output} -
         """
 
 rule reads_linesine_mapped:
@@ -445,11 +508,17 @@ rule reads_linesine_mapped:
         r1 = os.path.join(QC, "step_6", PATTERN_R1 + '_linesine.mapped.fastq'),
         r2 = os.path.join(QC, "step_6", PATTERN_R2 + '_linesine.mapped.fastq'),
         s = os.path.join(QC, "step_6", '{sample}_singletons_linesine.mapped.fastq')
+    benchmark:
+        "benchmarks/{rules.myrule.name}_{sample}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=8
     shell:
         """
-        samtools fastq -G 12 -f 65 {input} > {output.r1} &&
-        samtools fastq  -G 12 -f 129 {input} > {output.r2} &&
-        samtools fastq  -F 5 {input} > {output.s}
+        samtools fastq --threads {resources.cpus} -G 12 -f 65 {input} > {output.r1} &&
+        samtools fastq --threads {resources.cpus} -G 12 -f 129 {input} > {output.r2} &&
+        samtools fastq --threads {resources.cpus} -F 5 {input} > {output.s}
         """
 
 rule reads_linesine_unmapped:
@@ -459,11 +528,17 @@ rule reads_linesine_unmapped:
         r1 = os.path.join(QC, "step_6", PATTERN_R1 + ".s6.out.fastq"),
         r2 = os.path.join(QC, "step_6", PATTERN_R2 + ".s6.out.fastq"),
         s = os.path.join(QC, "step_6", '{sample}_singletons.s6.out.fastq')
+    benchmark:
+        "benchmarks/{rules.myrule.name}_{sample}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=8
     shell:
         """
-        samtools fastq  -f 77  {input} > {output.r1} && 
-        samtools fastq  -f 141 {input} > {output.r2} &&
-        samtools fastq  -f 4 -F 1  {input} > {output.s}
+        samtools fastq --threads {resources.cpus}  -f 77  {input} > {output.r1} && 
+        samtools fastq --threads {resources.cpus}  -f 141 {input} > {output.r2} &&
+        samtools fastq --threads {resources.cpus}  -f 4 -F 1  {input} > {output.s}
         """
 
 rule remove_bacteria:
@@ -478,10 +553,17 @@ rule remove_bacteria:
         os.path.join(QC, "step_7", '{sample}.bacteria.bam')
     params:
         idx = BACBT2
+    benchmark:
+        "benchmarks/{rules.myrule.name}_{sample}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=8
     shell:
         """
-        bowtie2 -p {threads} -x {params.idx} -1 {input.r1} -2 {input.r2} \
-        -U {input.s} | samtools view -bh | samtools sort -o {output} -
+        bowtie2 -p {resources.cpus} -x {params.idx} -1 {input.r1} -2 {input.r2} \
+        -U {input.s} | samtools view --threads {resources.cpus} -bh | \
+        samtools sort --threads {resources.cpus} -o {output} -
         """
 
 rule reads_bacteria_mapped:
@@ -491,11 +573,17 @@ rule reads_bacteria_mapped:
         r1 = os.path.join(QC, "step_7", PATTERN_R1 + '_bacteria.mapped.fastq'),
         r2 = os.path.join(QC, "step_7", PATTERN_R2 + '_bacteria.mapped.fastq'),
         s = os.path.join(QC, "step_7", '{sample}_singletons_bacteria.mapped.fastq')
+    benchmark:
+        "benchmarks/{rules.myrule.name}_{sample}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=8
     shell:
         """
-        samtools fastq -G 12 -f 65 {input} > {output.r1} &&
-        samtools fastq  -G 12 -f 129 {input} > {output.r2} &&
-        samtools fastq  -F 5 {input} > {output.s}
+        samtools fastq --threads {resources.cpus} -G 12 -f 65 {input} > {output.r1} &&
+        samtools fastq --threads {resources.cpus}  -G 12 -f 129 {input} > {output.r2} &&
+        samtools fastq  --threads {resources.cpus} -F 5 {input} > {output.s}
         """
 
 rule reads_bacteria_unmapped:
@@ -505,11 +593,17 @@ rule reads_bacteria_unmapped:
         r1 = os.path.join(QC, "step_7", PATTERN_R1 + ".s7.out.fastq"),
         r2 = os.path.join(QC, "step_7", PATTERN_R2 + ".s7.out.fastq"),
         s = os.path.join(QC, "step_7", '{sample}_singletons.s7.out.fastq')
+    benchmark:
+        "benchmarks/{rules.myrule.name}_{sample}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=8
     shell:
         """
-        samtools fastq  -f 77  {input} > {output.r1} && 
-        samtools fastq  -f 141 {input} > {output.r2} &&
-        samtools fastq  -f 4 -F 1  {input} > {output.s}
+        samtools fastq --threads {resources.cpus} -f 77  {input} > {output.r1} && 
+        samtools fastq --threads {resources.cpus} -f 141 {input} > {output.r2} &&
+        samtools fastq --threads {resources.cpus} -f 4 -F 1  {input} > {output.s}
         """
 
 """
@@ -546,6 +640,12 @@ rule deduplicate:
     output:
         fa = os.path.join(QC, "step_10", "{sample}_R1.best.fasta"),
         stats = os.path.join(QC, "step_10", "{sample}_R1.stats.txt")
+    benchmark:
+        "benchmarks/{rules.myrule.name}_{sample}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=8
     shell:
         """
         dedupe.sh in={input.r1} \
@@ -562,6 +662,12 @@ rule extract_seq_counts:
         os.path.join(QC, "step_10", "{sample}_R1.best.fasta")
     output:
         os.path.join(QC, "step_11", "{sample}_R1.reformated.fasta")
+    benchmark:
+        "benchmarks/{rules.myrule.name}_{sample}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=8
     shell:
         """
         reformat.sh in={input} out={output} \
@@ -634,6 +740,12 @@ rule merge_seq_table:
     output:
         seqtable = os.path.join(RESULTS, "seqtable_all.tsv"),
         tab2fx = os.path.join(RESULTS, "seqtable.tab2fx")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=8
     params:
         resultsdir = directory(RESULTS),
     script:
@@ -663,6 +775,12 @@ rule create_seqtable_db:
         os.path.join(RESULTS, "seqtable.fasta")
     output:
         os.path.join(AA_OUT, "seqtable_query.db")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         "mmseqs createdb --shuffle 0 --dbtype 0 {input} {output}"
 
@@ -673,10 +791,16 @@ rule seqtable_taxsearch:
         tr = os.path.join(AA_OUT, "taxonomyResult.dbtype")
     params:
         tr = os.path.join(AA_OUT, "taxonomyResult")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
         mmseqs taxonomy {input.sq} {VIRDB} {params.tr} $(mktemp -d -p {TMPDIR}) \
-        -a --start-sens 1 --sens-steps 3 -s 7 \
+        -a --start-sens 1 --sens-steps 3 -s 7  --threads {resources.cpus} \
         --search-type 2 --tax-output-mode 1
         """
 
@@ -686,11 +810,17 @@ rule seqtable_convert_alignments:
         tr = os.path.join(AA_OUT, "taxonomyResult.dbtype")
     params:
         tr = os.path.join(AA_OUT, "taxonomyResult")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     output:
         os.path.join(AA_OUT, "aln.m8")
     shell:
         """
-        mmseqs convertalis {input.sq} {VIRDB} {params.tr} {output} \
+        mmseqs convertalis {input.sq} {VIRDB} {params.tr} {output} --threads {resources.cpus} \
         --format-output "query,target,pident,alnlen,mismatch,gapopen,qstart,qend,tstart,tend,evalue,bits,qaln,taln"
         """
 
@@ -702,9 +832,15 @@ rule seqtable_lca:
     params:
         lc = os.path.join(AA_OUT, "lca.db"),
         tr = os.path.join(AA_OUT, "taxonomyResult")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
-        mmseqs lca {VIRDB} {params.tr} {params.lc} --tax-lineage true \
+        mmseqs lca {VIRDB} {params.tr} {params.lc} --tax-lineage 1 --threads {resources.cpus} \
         --lca-ranks "superkingdom,phylum,class,order,family,genus,species";
         """
 
@@ -716,9 +852,15 @@ rule seqtable_taxtable_tsv:
         lc = os.path.join(AA_OUT, "lca.db")
     output:
         os.path.join(AA_OUT, "taxonomyResult.tsv")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
-        mmseqs createtsv {input.sq} {params.lc} {output}
+        mmseqs createtsv --threads {resources.cpus} {input.sq} {params.lc} {output}
         """
 
 rule seqtable_create_kraken:
@@ -726,9 +868,15 @@ rule seqtable_create_kraken:
         lc = os.path.join(AA_OUT, "lca.db")
     output:
         os.path.join(AA_OUT, "taxonomyResult.report")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
-        mmseqs taxonomyreport {VIRDB} {input.lc} {output}
+        mmseqs taxonomyreport --threads {resources.cpus} {VIRDB} {input.lc} {output}
         """
 
 ## Adjust taxonomy table and extract viral lineages
@@ -892,6 +1040,12 @@ rule create_viral_seqs_db:
         os.path.join(AA_OUT, "viruses_seqs.fasta")
     output:
         os.path.join(AA_OUT_CHECKED, "viral_seqs_queryDB")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
         mmseqs createdb {input} {output} --shuffle 0 --dbtype 0
@@ -908,10 +1062,16 @@ rule viral_seqs_tax_search:
         os.path.join(AA_OUT_CHECKED, "taxonomyResult.index")
     params:
         tr = os.path.join(AA_OUT_CHECKED, "taxonomyResult")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
         mmseqs taxonomy {input.vqdb} {URVDB} {params.tr} \
-            $(mktemp -d -p {TMPDIR}) \
+            $(mktemp -d -p {TMPDIR}) --threads {resources.cpus} \
             -a -s 7 --search-type 2 --tax-output-mode 1
         """
 
@@ -923,9 +1083,15 @@ rule viral_seqs_convertalis:
         tr = os.path.join(AA_OUT_CHECKED, "taxonomyResult")
     output:
         os.path.join(AA_OUT_CHECKED, "aln.m8")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
-        mmseqs convertalis {input.vqdb} {URVDB} {params.tr} {output} \
+        mmseqs convertalis {input.vqdb} {URVDB} {params.tr} {output} --threads {resources.cpus} \
         --format-output "query,target,pident,alnlen,mismatch,gapopen,qstart,qend,tstart,tend,evalue,bits,qaln,taln"
         """
 
@@ -939,10 +1105,16 @@ rule viral_seqs_lca:
     output:
         os.path.join(AA_OUT_CHECKED, "lca.db.dbtype"),
         os.path.join(AA_OUT_CHECKED, "lca.db.index")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
         mmseqs lca {URVDB} {params.tr} {params.lca} \
-        --tax-lineage true \
+        --tax-lineage 1 --threads {resources.cpus} \
         --lca-ranks "superkingdom,phylum,class,order,family,genus,species"
         """
 
@@ -955,9 +1127,15 @@ rule extract_top_hit:
     output:
         os.path.join(AA_OUT_CHECKED, "taxonomyResult.firsthit.dbtype"),
         os.path.join(AA_OUT_CHECKED, "taxonomyResult.firsthit.index")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
-        mmseqs filterdb {params.tr} {params.fh} --extract-lines 1
+        mmseqs filterdb {params.tr} {params.fh} --extract-lines 1 --threads {resources.cpus}
         """
 
 rule convertalis_vsqd:
@@ -968,9 +1146,15 @@ rule convertalis_vsqd:
         os.path.join(AA_OUT_CHECKED, "taxonomyResult.firsthit.m8")
     params:
         trfh = os.path.join(AA_OUT_CHECKED, "taxonomyResult.firsthit")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
-        mmseqs convertalis {input.vqdb} {URVDB} {params.trfh} {output} 
+        mmseqs convertalis --threads {resources.cpus} {input.vqdb} {URVDB} {params.trfh} {output} 
         """
 
 rule create_taxtable_vsqd:
@@ -981,9 +1165,15 @@ rule create_taxtable_vsqd:
         lcadb = os.path.join(AA_OUT_CHECKED, "lca.db")
     output:
         os.path.join(AA_OUT_CHECKED, "taxonomyResult.tsv")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
-        mmseqs createtsv {input.vqdb} {params.lcadb} {output}
+        mmseqs createtsv --threads {resources.cpus} {input.vqdb} {params.lcadb} {output}
         """
 
 rule create_kraken_vsqd:
@@ -993,9 +1183,15 @@ rule create_kraken_vsqd:
         lcadb = os.path.join(AA_OUT_CHECKED, "lca.db")
     output:
         os.path.join(AA_OUT_CHECKED, "taxonomyResult.report")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
-        mmseqs taxonomyreport {URVDB} {params.lcadb} {output}
+        mmseqs taxonomyreport --threads {resources.cpus} {URVDB} {params.lcadb} {output}
         """
 
 rule nonphages_to_pyloseq_table:
@@ -1099,6 +1295,12 @@ rule create_nt_querydb:
         dbt = os.path.join(NT_OUT, "seqtable_queryDB.dbtype")
     params:
         st = os.path.join(NT_OUT, "seqtable_queryDB")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
         mmseqs createdb {input} {params.st}  --dbtype 2
@@ -1114,10 +1316,16 @@ rule nt_search:
     params:
         st = os.path.join(NT_OUT, "seqtable_queryDB"),
         rdb = os.path.join(NT_OUT, "resultDB")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
         mmseqs search {params.st} {NTDB} {params.rdb} $(mktemp -d -p {TMPDIR}) \
-        -a -e 0.000001 --search-type 3 --cov-mode 2 -c 0.95
+        -a -e 0.000001 --search-type 3 --cov-mode 2 -c 0.95 --threads {resources.cpus}
         """
 
 rule nt_top_hit:
@@ -1130,9 +1338,15 @@ rule nt_top_hit:
     params:
         rdb = os.path.join(NT_OUT, "resultDB"),
         rdbfh = os.path.join(NT_OUT, "resultDB.firsthit")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
-        mmseqs filterdb {params.rdb} {params.rdbfh} --extract-lines 1
+        mmseqs filterdb {params.rdb} {params.rdbfh} --extract-lines 1 --threads {resources.cpus}
         """
 
 rule nt_to_m8:
@@ -1146,9 +1360,15 @@ rule nt_to_m8:
     params:
         st = os.path.join(NT_OUT, "seqtable_queryDB"),
         rdbfh = os.path.join(NT_OUT, "resultDB.firsthit")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
-        mmseqs convertalis {params.st} {NTDB} {params.rdbfh} {output}
+        mmseqs convertalis {params.st} {NTDB} {params.rdbfh} {output} --threads {resources.cpus}
         """
 
 rule nt_annotate:
@@ -1244,9 +1464,15 @@ rule create_nt_db:
          dbt = os.path.join(NT_CHECKED_OUT, "seqtable_queryDB.dbtype")
     params:
          st = os.path.join(NT_CHECKED_OUT, "seqtable_queryDB")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
-        mmseqs createdb {input} {params.st} --dbtype 2
+        mmseqs createdb {input} {params.st} --dbtype 2 
         """
 
 rule nt_search_checked:
@@ -1259,10 +1485,16 @@ rule nt_search_checked:
     params:
         st = os.path.join(NT_CHECKED_OUT, "seqtable_queryDB"),
         rdb = os.path.join(NT_CHECKED_OUT, "resultDB")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
         mmseqs search {params.st} {NTDB} {params.rdb} $(mktemp -d -p {TMPDIR}) \
-        -a -e 0.000001 --search-type 3 --cov-mode 2 -c 0.95
+        -a -e 0.000001 --search-type 3 --cov-mode 2 -c 0.95 --threads {resources.cpus}
         """
 
 
@@ -1276,9 +1508,15 @@ rule filter_nt_db:
     params:
         rdb = os.path.join(NT_CHECKED_OUT, "resultDB"),
         rfh = os.path.join(NT_CHECKED_OUT, "resultDB.firsthit")
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
-        mmseqs filterdb {params.rdb} {params.rfh}  --extract-lines 1
+        mmseqs filterdb {params.rdb} {params.rfh}  --extract-lines 1 --threads {resources.cpus}
         """
 
 rule convert_nt_alias:
@@ -1292,9 +1530,15 @@ rule convert_nt_alias:
     params:
         fh = os.path.join(NT_CHECKED_OUT, "resultDB.firsthit"),
         sq = os.path.join(NT_CHECKED_OUT, "seqtable_queryDB"),
+    benchmark:
+        "benchmarks/{rules.myrule.name}.txt"
+    resources:
+        time_min = 240,
+        mem_mb=20000,
+        cpus=16
     shell:
         """
-        mmseqs convertalis {params.sq} {BVMDB} {params.fh} {output}
+        mmseqs convertalis {params.sq} {BVMDB} {params.fh} {output} --threads {resources.cpus}
         """
 
 rule annotate_checked_nt:

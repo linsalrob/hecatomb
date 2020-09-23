@@ -95,12 +95,18 @@ rule make_bac_bt_idx:
         os.path.join(BACPATH, config['DatabaseFiles']['bacteria'])
     output:
         expand(os.path.join(BACPATH, "bac_uniquespecies_giant.masked_Ns_removed.{n}.bt2l"), n=[1,2,3,4])
+    benchmark:
+        "benchmarks/make_bac_bt_idx.txt"
+    resources:
+        time_min = 240,
+        mem_mb=100000,
+        cpus=8
     params:
         wd = BACPATH,
         fa = config['DatabaseFiles']['bacteria'],
         bt = "bac_uniquespecies_giant.masked_Ns_removed"
     shell:
-        "cd {params.wd} && bowtie2-build --large-index {params.fa} {params.bt}"
+        "cd {params.wd} && bowtie2-build --threads {resources.cpus} --large-index {params.fa} {params.bt}"
 
 
 
@@ -109,12 +115,18 @@ rule make_host_bt_idx:
         os.path.join(HOSTPATH, config['DatabaseFiles']['host'])
     output:
         expand(os.path.join(HOSTPATH, "human_virus_masked.{n}.bt2l"), n=[1,2,3,4])
+    benchmark:
+        "benchmarks/make_host_bt_idx.txt"
+    resources:
+        time_min = 240,
+        mem_mb=100000,
+        cpus=8
     params:
         wd = HOSTPATH,
         btidx = "human_virus_masked",
         fa = config['DatabaseFiles']['host']
     shell:
-        "cd {params.wd} && bowtie2-build --large-index {params.fa} {params.btidx}"
+        "cd {params.wd} && bowtie2-build --threads {resources.cpus} --large-index {params.fa} {params.btidx}"
 
 
 rule make_host_databases:

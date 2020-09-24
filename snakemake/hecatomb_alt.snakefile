@@ -635,6 +635,8 @@ rule reads_bacteria_unmapped:
         time_min = 240,
         mem_mb=20000,
         cpus=8
+    conda:
+        "envs/samtools.yaml"
     shell:
         """
         samtools fastq --threads {resources.cpus} -f 77  {input} > {output.r1} && 
@@ -1122,7 +1124,7 @@ rule viral_seqs_tax_search:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
         time_min = 240,
-        mem_mb=20000,
+        mem_mb=100000,
         cpus=16
     conda:
         "envs/mmseqs2.yaml"

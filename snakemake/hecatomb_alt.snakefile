@@ -823,6 +823,8 @@ rule create_seqtable_db:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         "mmseqs createdb --shuffle 0 --dbtype 0 {input} {output}"
 
@@ -839,6 +841,8 @@ rule seqtable_taxsearch:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs taxonomy {input.sq} {VIRDB} {params.tr} $(mktemp -d -p {TMPDIR}) \
@@ -860,6 +864,8 @@ rule seqtable_convert_alignments:
         cpus=16
     output:
         os.path.join(AA_OUT, "aln.m8")
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs convertalis {input.sq} {VIRDB} {params.tr} {output} --threads {resources.cpus} \
@@ -880,6 +886,8 @@ rule seqtable_lca:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs lca {VIRDB} {params.tr} {params.lc} --tax-lineage 1 --threads {resources.cpus} \
@@ -900,6 +908,8 @@ rule seqtable_taxtable_tsv:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs createtsv --threads {resources.cpus} {input.sq} {params.lc} {output}
@@ -916,6 +926,8 @@ rule seqtable_create_kraken:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs taxonomyreport --threads {resources.cpus} {VIRDB} {input.lc} {output}
@@ -1088,6 +1100,8 @@ rule create_viral_seqs_db:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs createdb {input} {output} --shuffle 0 --dbtype 0
@@ -1110,6 +1124,8 @@ rule viral_seqs_tax_search:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs taxonomy {input.vqdb} {URVDB} {params.tr} \
@@ -1131,6 +1147,8 @@ rule viral_seqs_convertalis:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs convertalis {input.vqdb} {URVDB} {params.tr} {output} --threads {resources.cpus} \
@@ -1153,6 +1171,8 @@ rule viral_seqs_lca:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs lca {URVDB} {params.tr} {params.lca} \
@@ -1175,6 +1195,8 @@ rule extract_top_hit:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs filterdb {params.tr} {params.fh} --extract-lines 1 --threads {resources.cpus}
@@ -1194,6 +1216,8 @@ rule convertalis_vsqd:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs convertalis --threads {resources.cpus} {input.vqdb} {URVDB} {params.trfh} {output} 
@@ -1213,6 +1237,8 @@ rule create_taxtable_vsqd:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs createtsv --threads {resources.cpus} {input.vqdb} {params.lcadb} {output}
@@ -1231,6 +1257,8 @@ rule create_kraken_vsqd:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs taxonomyreport --threads {resources.cpus} {URVDB} {params.lcadb} {output}
@@ -1343,6 +1371,8 @@ rule create_nt_querydb:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs createdb {input} {params.st}  --dbtype 2
@@ -1364,6 +1394,8 @@ rule nt_search:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs search {params.st} {NTDB} {params.rdb} $(mktemp -d -p {TMPDIR}) \
@@ -1386,6 +1418,8 @@ rule nt_top_hit:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs filterdb {params.rdb} {params.rdbfh} --extract-lines 1 --threads {resources.cpus}
@@ -1408,6 +1442,8 @@ rule nt_to_m8:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs convertalis {params.st} {NTDB} {params.rdbfh} {output} --threads {resources.cpus}
@@ -1420,6 +1456,8 @@ rule nt_annotate:
         linout = os.path.join(NT_CHECKED_OUT, "mmseqs_pviral_nt_lineage.tsv")
     params:
         taxtax = TAXTAX
+    conda:
+        "envs/R.yaml"
     script:
         "scripts/mmseqs_pviral_nt_annotate.R"
 
@@ -1512,6 +1550,8 @@ rule create_nt_db:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs createdb {input} {params.st} --dbtype 2 
@@ -1533,6 +1573,8 @@ rule nt_search_checked:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs search {params.st} {NTDB} {params.rdb} $(mktemp -d -p {TMPDIR}) \
@@ -1556,6 +1598,8 @@ rule filter_nt_db:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs filterdb {params.rdb} {params.rfh}  --extract-lines 1 --threads {resources.cpus}
@@ -1578,6 +1622,8 @@ rule convert_nt_alias:
         time_min = 240,
         mem_mb=20000,
         cpus=16
+    conda:
+        "envs/mmseqs2.yaml"
     shell:
         """
         mmseqs convertalis {params.sq} {BVMDB} {params.fh} {output} --threads {resources.cpus}
@@ -1590,6 +1636,8 @@ rule annotate_checked_nt:
         linout = os.path.join(NT_CHECKED_OUT, "mmseqs_pviral_nt_checked_lineage.tsv")
     params:
         taxtax = TAXTAX
+    conda:
+        "envs/R.yaml"
     script:
         "scripts/mmseqs_pviral_nt_check_annotate.R"
 

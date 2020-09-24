@@ -1,21 +1,73 @@
 
-# Installing hecatomb from source
+# Hecatomb is now dependent on conda and snakemake alone.
 
-hecatomb has a few requirements:
+You only need to install `conda` and `snakemake` and `hecatomb` will do the rest for you. No more software installs!
 
-- [R](https://www.r-project.org/)
-    - [tidyverse](https://www.tidyverse.org/packages/)
-- [snakemake](https://snakemake.readthedocs.io/)
-- [bbtools](https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/installation-guide/)
+## Step 1. Install `conda`. 
+
+This is undoubtedly the hardest part, and it is quite easy. Install [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html) following their instructions.
+
+## Step 2. Install `snakemake` and `mamba`
+
+We highly recommend you install `mamba` as it is a _lot_ faster than conda. But you don't have to (if you don't, skip the mamba step below)
+
+```
+conda install -c conda-forge -c bioconda snakemake mamba
+```
 
 
-Please note that `tidyverse` requires libxml2-dev or libxml2-devel depending on your operating system.
+### Step 3. Clone this repo
 
-To install the required `R` packages, you can run the accessory [install_packages.R](accessory/install_packages.R) like so: `Rscript install_packages.R`. Note that you do not need to be root to install these packages.
+We will move this into a lightweight repo soon. At the moment you have all the unnecessary development cruft here
 
-# Conda installation
+```
+git clone https://github.com/linsalrob/hecatomb.git
+```
 
-Please check the [dependencies](DEPENDENCIES.md) for instructions on how to install all the dependencies using CONDA.
+
+### Step 4. Set up your snakemake environment
+
+We recommend using profiles (see these [great](https://www.sichong.site/2020/02/25/snakemake-and-slurm-how-to-manage-workflow-with-resource-constraint-on-hpc/) and [great](http://bluegenes.github.io/Using-Snakemake_Profiles/) blogs for more information). 
+
+Our default profile encompasses both snakemake and slurm details. If you are not using slurm, then feel free to leave those parts out.
+
+You will need to make a directory in you `.config` directory and add this information:
+
+```bash
+mkdir ~/.config/snakemake/slurm/
+vi ~/.config/snakemake/slurm/config.yaml
+```
+
+Put this in that file:
+
+```yaml
+# non-slurm settings
+
+jobs: 10
+use-conda: True
+conda-frontend: mamba
+default-resources: [cpus=1, mem_mb=2000, time_min=60]
+keep-going: True
+
+
+# slurm settings
+
+cluster: "sbatch -t {resources.time_min} --mem={resources.mem_mb} -c {resources.cpus} -o logs_slurm/{rule}_{jobid}.out -e logs_slurm/{rule}_{jobid}.err "
+latency-wait: 60
+local-cores: 32
+```
+
+
+
+
+### Step 5. Run the code
+
+With $HECATOMB as the path to this directory you can run:
+
+
+```bash
+snakemake --profile slurm --configfile config.yaml -s $HECATOMB/snakemake/hecatomb_alt.snakefile 
+```
 
 # The config file
 
@@ -28,23 +80,6 @@ The key things in the config file are:
 2. The directory name where your raw reads (`fastq files`) reside. 
 
 You can adjust almost everything else as needed, and the directories will be created when the data is generated.
-
-# Resources
-
-The snakemake conda applications require use of the `resources` options available in snakemake to request additional resources (memory/time/cpus) on an as-needed basis (i.e. not every application requests these by default). We strongly recommend setting up default configurations for these.
-
-Create a directory `~/.config/snakemake/slurm/` and then create the file `~/.config/snakemake/slurm/config.yaml` with these contents:
-
-
-```
-jobs: 10
-cluster: "sbatch -t {resources.time_min} --mem={resources.mem_mb} -c {resources.cpus} -o logs_slurm/{rule}_{jobid}.out -e logs_slurm/{rule}_{jobid}.err "
-default-resources: [cpus=1, mem_mb=2000, time_min=60]
-latency-wait: 60
-local-cores: 32
-```
-
-Now run snakemake as `snakemake --profile slurm --configfile config.yaml -s snakefile` to use those default settings.
 
 
 # Setting up the databases
@@ -65,7 +100,7 @@ Once you have the databases installed you can run hecatomb on the test data that
 
 ```bash
 cd test_data
-snakemake --snakefile ~/GitHubs/hecatomb/snakemake/hecatomb.snakefile --configfile config.yaml
+snakemake --snakefile $HECATOMB/snakemake/hecatomb.snakefile --configfile config.yaml
 ```
 
 

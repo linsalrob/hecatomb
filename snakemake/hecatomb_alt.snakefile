@@ -3,6 +3,14 @@
 The hecatomb snakefile has all the parts of the hecatomb pipeline, however
 you will need to download the databases before we can begin!
 
+This snakefile also uses conda. To run this, use
+
+
+```
+snakemake --profile slurm --configfile config.yaml -s $HECATOMB/snakemake/hecatomb_alt.snakefile --use-conda --conda-frontend mamba
+```
+
+
 Rob Edwards, Jan-Sep 2020
 """
 
@@ -256,6 +264,8 @@ rule trim_low_quality:
         cpus=8
     params:
         o = os.path.join(QC, "step_0")
+    conda:
+        "envs/prinseq.yaml"
     shell:
         """
             prinseq++ -min_len 60 -min_qual_mean 25 -ns_max_n 1 -derep 1 \
@@ -288,6 +298,8 @@ rule remove_leftmost_primerB:
         time_min = 240,
         mem_mb=20000,
         cpus=8
+    conda:
+        "envs/bbmap.yaml"
     shell:
         """
         bbduk.sh in={input.r1} in2={input.r2} \
@@ -317,6 +329,8 @@ rule remove_3prime_contaminant:
         time_min = 240,
         mem_mb=20000,
         cpus=8
+    conda:
+        "envs/bbmap.yaml"
     shell:
         """
         bbduk.sh in={input.r1} in2={input.r2} \
@@ -345,6 +359,8 @@ rule remove_primer_free_adapter:
         time_min = 240,
         mem_mb=20000,
         cpus=8
+    conda:
+        "envs/bbmap.yaml"
     shell:
         """
         bbduk.sh in={input.r1} in2={input.r2} \
@@ -373,6 +389,8 @@ rule remove_adapter_free_primer:
         time_min = 240,
         mem_mb=20000,
         cpus=8
+    conda:
+        "envs/bbmap.yaml"
     shell:
         """
         bbduk.sh in={input.r1} in2={input.r2} \
@@ -400,6 +418,8 @@ rule remove_vector_contamination:
         time_min = 240,
         mem_mb=20000,
         cpus=8
+    conda:
+        "envs/bbmap.yaml"
     shell:
         """
         bbduk.sh in={input.r1} in2={input.r2} \
@@ -427,6 +447,8 @@ rule bowtie2_host_removal:
         cpus=8
     params:
         idx = HOSTBT2
+    conda:
+        "envs/bowtie2.yaml"
     shell:
         """
         bowtie2 -p {resources.cpus} -x {params.idx} -1 {input.r1} -2 {input.r2} | \
@@ -452,6 +474,8 @@ rule reads_host_mapped:
         time_min = 240,
         mem_mb=20000,
         cpus=8
+    conda:
+        "envs/bowtie2.yaml"
     shell:
         """
         samtools fastq --threads {resources.cpus} -G 12 -f 65 {input} > {output.r1} &&
@@ -472,6 +496,8 @@ rule reads_host_unmapped:
         time_min = 240,
         mem_mb=20000,
         cpus=8
+    conda:
+        "envs/samtools.yaml"
     shell:
         """
         samtools fastq --threads {resources.cpus} -f 77  {input} > {output.r1} && 
@@ -494,6 +520,8 @@ rule line_sine_bam:
         cpus=8
     params:
         idx = os.path.join(CONPATH, "line_sine")
+    conda:
+        "envs/bowtie2.yaml"
     shell:
         """
         bowtie2 -p {resources.cpus} -x {params.idx} -1 {input.r1} -2 {input.r2} \
@@ -514,6 +542,8 @@ rule reads_linesine_mapped:
         time_min = 240,
         mem_mb=20000,
         cpus=8
+    conda:
+        "envs/samtools.yaml"
     shell:
         """
         samtools fastq --threads {resources.cpus} -G 12 -f 65 {input} > {output.r1} &&
@@ -534,6 +564,8 @@ rule reads_linesine_unmapped:
         time_min = 240,
         mem_mb=20000,
         cpus=8
+    conda:
+        "envs/samtools.yaml"
     shell:
         """
         samtools fastq --threads {resources.cpus}  -f 77  {input} > {output.r1} && 
@@ -559,6 +591,8 @@ rule remove_bacteria:
         time_min = 240,
         mem_mb=20000,
         cpus=8
+    conda:
+        "envs/bowtie2.yaml"
     shell:
         """
         bowtie2 -p {resources.cpus} -x {params.idx} -1 {input.r1} -2 {input.r2} \
@@ -579,6 +613,8 @@ rule reads_bacteria_mapped:
         time_min = 240,
         mem_mb=20000,
         cpus=8
+    conda:
+        "envs/samtools.yaml"
     shell:
         """
         samtools fastq --threads {resources.cpus} -G 12 -f 65 {input} > {output.r1} &&
@@ -646,6 +682,8 @@ rule deduplicate:
         time_min = 240,
         mem_mb=20000,
         cpus=8
+    conda:
+        "envs/bbmap.yaml"
     shell:
         """
         dedupe.sh in={input.r1} \
@@ -668,6 +706,8 @@ rule extract_seq_counts:
         time_min = 240,
         mem_mb=20000,
         cpus=8
+    conda:
+        "envs/bbmap.yaml"
     shell:
         """
         reformat.sh in={input} out={output} \
@@ -748,6 +788,8 @@ rule merge_seq_table:
         cpus=8
     params:
         resultsdir = directory(RESULTS),
+    conda:
+        "envs/R.yaml"
     script:
         "scripts/seqtable_merge.R"
 

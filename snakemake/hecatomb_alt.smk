@@ -257,7 +257,7 @@ rule trim_low_quality:
         b1 = temporary(os.path.join(QC, "step_0", PATTERN_R1 + ".bad_out_R1.fastq")),
         b2 = temporary(os.path.join(QC, "step_0", PATTERN_R2 + ".bad_out_R2.fastq"))
     benchmark:
-        "benchmarks/{rules.myrule.name}_{sample}.txt"
+        "benchmarks/trim_low_quality_{sample}.txt"
     resources:
         time_min = 240,
         mem_mb=20000,
@@ -293,7 +293,7 @@ rule remove_leftmost_primerB:
         r2 = os.path.join(QC, "step_1", PATTERN_R2 + ".s1.out.fastq"),
         stats = os.path.join(QC, "step_1", "{sample}.s1.stats.txt")
     benchmark:
-        "benchmarks/{rules.myrule.name}_{sample}.txt"
+        "benchmarks/removeprimerB_{sample}.txt"
     resources:
         time_min = 240,
         mem_mb=20000,
@@ -324,7 +324,7 @@ rule remove_3prime_contaminant:
         r2 = os.path.join(QC, "step_2", PATTERN_R2 + ".s2.out.fastq"),
         stats = os.path.join(QC, "step_2", "{sample}.s2.stats.txt")
     benchmark:
-        "benchmarks/{rules.myrule.name}_{sample}.txt"
+        "benchmarks/remove_3prime_contaminant_{sample}.txt"
     resources:
         time_min = 240,
         mem_mb=20000,
@@ -354,7 +354,7 @@ rule remove_primer_free_adapter:
         r2 = os.path.join(QC, "step_3", PATTERN_R2 + ".s3.out.fastq"),
         stats = os.path.join(QC, "step_3", "{sample}.s3.stats.txt")
     benchmark:
-        "benchmarks/{rules.myrule.name}_{sample}.txt"
+        "benchmarks/remove_primer_free_adapter_{sample}.txt"
     resources:
         time_min = 240,
         mem_mb=20000,
@@ -384,7 +384,7 @@ rule remove_adapter_free_primer:
         r2 = os.path.join(QC, "step_4", PATTERN_R2 + ".s4.out.fastq"),
         stats = os.path.join(QC, "step_4", "{sample}.s4.stats.txt")
     benchmark:
-        "benchmarks/{rules.myrule.name}_{sample}.txt"
+        "benchmarks/remove_adapter_free_primer_{sample}.txt"
     resources:
         time_min = 240,
         mem_mb=20000,
@@ -413,7 +413,7 @@ rule remove_vector_contamination:
         r2 = os.path.join(QC, "step_5", PATTERN_R2 + ".s5.out.fastq"),
         stats = os.path.join(QC, "step_5", "{sample}.s5.stats.txt")
     benchmark:
-        "benchmarks/{rules.myrule.name}_{sample}.txt"
+        "benchmarks/remove_vector_contamination_{sample}.txt"
     resources:
         time_min = 240,
         mem_mb=20000,

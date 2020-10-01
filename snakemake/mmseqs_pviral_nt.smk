@@ -17,9 +17,9 @@ if not config:
     sys.exit()
 
 
-RESULTS = config['Output']['Results']
 DBDIR = config['Paths']['Databases']
 TMPDIR = config['Paths']['Temp']
+RESULTS = config['Output']['Results']
 if not os.path.exists(TMPDIR):
     os.makedirs(TMPDIR, exist_ok=True)
 

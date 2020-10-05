@@ -259,7 +259,6 @@ rule trim_low_quality:
     benchmark:
         "benchmarks/trim_low_quality_{sample}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=8
     params:
@@ -295,7 +294,6 @@ rule remove_leftmost_primerB:
     benchmark:
         "benchmarks/removeprimerB_{sample}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=8
     conda:
@@ -326,7 +324,6 @@ rule remove_3prime_contaminant:
     benchmark:
         "benchmarks/remove_3prime_contaminant_{sample}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=8
     conda:
@@ -356,7 +353,6 @@ rule remove_primer_free_adapter:
     benchmark:
         "benchmarks/remove_primer_free_adapter_{sample}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=8
     conda:
@@ -386,7 +382,6 @@ rule remove_adapter_free_primer:
     benchmark:
         "benchmarks/remove_adapter_free_primer_{sample}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=8
     conda:
@@ -415,7 +410,6 @@ rule remove_vector_contamination:
     benchmark:
         "benchmarks/remove_vector_contamination_{sample}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=8
     conda:
@@ -442,7 +436,6 @@ rule bowtie2_host_removal:
     benchmark:
         "benchmarks/{rules.myrule.name}_{sample}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=8
     params:
@@ -471,7 +464,6 @@ rule reads_host_mapped:
     benchmark:
         "benchmarks/{rules.myrule.name}_{sample}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=8
     conda:
@@ -493,7 +485,6 @@ rule reads_host_unmapped:
     benchmark:
         "benchmarks/{rules.myrule.name}_{sample}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=8
     conda:
@@ -515,7 +506,6 @@ rule line_sine_bam:
     benchmark:
         "benchmarks/{rules.myrule.name}_{sample}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=8
     params:
@@ -539,7 +529,6 @@ rule reads_linesine_mapped:
     benchmark:
         "benchmarks/{rules.myrule.name}_{sample}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=8
     conda:
@@ -561,7 +550,6 @@ rule reads_linesine_unmapped:
     benchmark:
         "benchmarks/{rules.myrule.name}_{sample}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=8
     conda:
@@ -588,7 +576,6 @@ rule remove_bacteria:
     benchmark:
         "benchmarks/{rules.myrule.name}_{sample}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=8
     conda:
@@ -610,7 +597,6 @@ rule reads_bacteria_mapped:
     benchmark:
         "benchmarks/{rules.myrule.name}_{sample}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=8
     conda:
@@ -632,7 +618,6 @@ rule reads_bacteria_unmapped:
     benchmark:
         "benchmarks/{rules.myrule.name}_{sample}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=8
     conda:
@@ -681,7 +666,6 @@ rule deduplicate:
     benchmark:
         "benchmarks/{rules.myrule.name}_{sample}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=8
     conda:
@@ -705,7 +689,6 @@ rule extract_seq_counts:
     benchmark:
         "benchmarks/{rules.myrule.name}_{sample}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=8
     conda:
@@ -785,7 +768,6 @@ rule merge_seq_table:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=8
     params:
@@ -822,7 +804,6 @@ rule create_seqtable_db:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -840,7 +821,6 @@ rule seqtable_taxsearch:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -861,7 +841,6 @@ rule seqtable_convert_alignments:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     output:
@@ -885,7 +864,6 @@ rule seqtable_lca:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -907,7 +885,6 @@ rule seqtable_taxtable_tsv:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -925,7 +902,6 @@ rule seqtable_create_kraken:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -1099,7 +1075,6 @@ rule create_viral_seqs_db:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -1123,7 +1098,6 @@ rule viral_seqs_tax_search:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=100000,
         cpus=16
     conda:
@@ -1146,7 +1120,6 @@ rule viral_seqs_convertalis:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -1170,7 +1143,6 @@ rule viral_seqs_lca:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -1194,7 +1166,6 @@ rule extract_top_hit:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -1215,7 +1186,6 @@ rule convertalis_vsqd:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -1236,7 +1206,6 @@ rule create_taxtable_vsqd:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -1256,7 +1225,6 @@ rule create_kraken_vsqd:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -1370,7 +1338,6 @@ rule create_nt_querydb:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -1393,7 +1360,6 @@ rule nt_search:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -1417,7 +1383,6 @@ rule nt_top_hit:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -1441,7 +1406,6 @@ rule nt_to_m8:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -1549,7 +1513,6 @@ rule create_nt_db:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -1572,7 +1535,6 @@ rule nt_search_checked:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -1597,7 +1559,6 @@ rule filter_nt_db:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
@@ -1621,7 +1582,6 @@ rule convert_nt_alias:
     benchmark:
         "benchmarks/{rules.myrule.name}.txt"
     resources:
-        time_min = 240,
         mem_mb=20000,
         cpus=16
     conda:
